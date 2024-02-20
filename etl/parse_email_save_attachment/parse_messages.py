@@ -106,7 +106,6 @@ def upload_attachments_to_s3(bucket, prefix, location):
 
 
 def main():
-    # Replace with your bucket name and path
     bucket = "emergency-mgmt-recd-data"
     read_prefix = "emails-received/"
     write_prefix = "attachments/"
