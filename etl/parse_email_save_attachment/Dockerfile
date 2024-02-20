@@ -14,4 +14,4 @@ WORKDIR /application/
 RUN pip install -r requirements.txt
 
 # Set entry point to /bin/bash
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/usr/local/bin/python", "/application/parse_messages.py"]
