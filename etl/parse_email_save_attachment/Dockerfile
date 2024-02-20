@@ -13,5 +13,5 @@ WORKDIR /application/
 # Install dependencies
 RUN pip install -r requirements.txt
 
-# Set entry point to /bin/bash
+# Set entry point to run the ETL
 ENTRYPOINT ["/usr/local/bin/python", "/application/parse_messages.py"]
