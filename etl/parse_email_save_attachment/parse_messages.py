@@ -121,6 +121,7 @@ def main():
     print(f"The attachments are saved in: {location}")
 
     upload_attachments_to_s3(bucket, write_prefix, location)
+    print(f"The attachments are uploaded to S3.")
 
 
 if __name__ == "__main__":
