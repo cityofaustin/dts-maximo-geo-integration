@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import glob
 import pytz
 import boto3
 import email
@@ -61,7 +62,6 @@ def parse_email_from_s3(email_content):
     return temp_dir
 
 
-import glob
 
 
 def upload_attachments_to_s3(bucket, prefix, location):
