@@ -12,21 +12,22 @@ from datetime import datetime
 
 def get_most_recent_file(bucket_name, prefix):
     s3 = boto3.client("s3")
+    paginator = s3.get_paginator('list_objects_v2')
 
-    # List objects within the specified bucket and prefix
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    files = []
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        if "Contents" in page:
+            files.extend(page["Contents"])
 
-    # Check if the bucket is empty or the prefix doesn't match any files
-    if "Contents" not in response:
+    if not files:
         return "No files found in the bucket with the specified prefix."
 
     # Sort the files by last modified date
-    files = sorted(response["Contents"], key=itemgetter("LastModified"), reverse=True)
+    files = sorted(files, key=itemgetter("LastModified"), reverse=True)
 
     # Get the most recent file
     most_recent_file = files[0]
     return most_recent_file["Key"]
-
 
 def get_file_content(bucket_name, file_key):
     s3 = boto3.client("s3")
