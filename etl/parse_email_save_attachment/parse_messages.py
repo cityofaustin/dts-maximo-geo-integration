@@ -39,7 +39,7 @@ def get_most_recent_file(bucket_name, prefix):
             files.extend(page["Contents"])
 
     if not files:
-        return "No files found in the bucket with the specified prefix."
+        raise FileNotFoundError("No files found in the bucket with the specified prefix.")
 
     # Sort the files by last modified date
     files = sorted(files, key=itemgetter("LastModified"), reverse=True)
