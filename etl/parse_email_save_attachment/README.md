@@ -2,6 +2,8 @@
 
 ## Intent
 
+![Diagram](etl/parse_email_save_attachment/docs/diagram.png)
+
 This ETL provides a mechanism to receive data via email for the geo team's FME ETL to consume.
 
 ## Mechanism
