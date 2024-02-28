@@ -125,6 +125,20 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
             s3.meta.client.upload_file(file_path, bucket, key)
 
 
+def check_if_hash_has_been_seen(hash, bucket, prefix):
+    s3 = boto3.client("s3")
+    paginator = s3.get_paginator('list_objects_v2')
+    short_hash = hash[:8]  # Only use the first 8 characters of the hash
+
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        if "Contents" in page:
+            for obj in page["Contents"]:
+                if short_hash in obj["Key"]:
+                    print(f"Hash {short_hash} has been seen before in file {obj['Key']}")
+                    quit()
+
+    print(f"Hash {short_hash} has not been seen before.")
+
 def main():
     bucket = "emergency-mgmt-recd-data"
     read_prefix = "emails-received/"
@@ -136,6 +150,9 @@ def main():
     content, hash = get_file_content(bucket, most_recent_file)
     # print(f"The content of the most recently uploaded file is: {content}")
     print(f"The SHA256 hash of the content is: {hash}")
+
+    if check_if_hash_has_been_seen(hash, bucket, write_prefix):
+        quit()
 
     location = parse_email_from_s3(content)
     print(f"The attachments are saved in: {location}")
