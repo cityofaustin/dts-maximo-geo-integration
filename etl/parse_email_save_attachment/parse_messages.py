@@ -135,9 +135,10 @@ def check_if_hash_has_been_seen(hash, bucket, prefix):
             for obj in page["Contents"]:
                 if short_hash in obj["Key"]:
                     print(f"Hash {short_hash} has been seen before in file {obj['Key']}")
-                    quit()
+                    return True
 
     print(f"Hash {short_hash} has not been seen before.")
+    return False
 
 def main():
     bucket = "emergency-mgmt-recd-data"
