@@ -5,6 +5,7 @@ import glob
 import pytz
 import boto3
 import email
+import hashlib
 import tempfile
 from email import policy
 from operator import itemgetter
@@ -37,9 +38,15 @@ def get_file_content(bucket_name, file_key):
     obj = s3.get_object(Bucket=bucket_name, Key=file_key)
 
     # Get the object's content
-    content = obj["Body"].read().decode("utf-8")
-    return content
+    content = obj["Body"].read()
 
+    # Compute the SHA256 hash of the content
+    sha256_hash = hashlib.sha256(content).hexdigest()
+
+    # Decode the content
+    content = content.decode("utf-8")
+
+    return content, sha256_hash
 
 def parse_email_from_s3(email_content):
     # Decode the string into bytes
@@ -77,11 +84,11 @@ def parse_email_from_s3(email_content):
     return temp_dir
 
 
-def upload_attachments_to_s3(bucket, prefix, location):
+def upload_attachments_to_s3(bucket, prefix, location, hash):
     s3 = boto3.resource("s3")
 
     # Create a new folder with the current date and time in UTC
-    folder_name = datetime.now(pytz.utc).strftime("%Y%m%d-%H%M%S_UTC")
+    folder_name = datetime.now(pytz.utc).strftime("%Y%m%d-%H%M%S_UTC") + "-" + hash[:8]
     new_prefix = os.path.join(prefix, folder_name)
 
     # List all files in the location
@@ -126,13 +133,14 @@ def main():
     most_recent_file = get_most_recent_file(bucket, read_prefix)
     print(f"The most recently uploaded file is: {most_recent_file}")
 
-    content = get_file_content(bucket, most_recent_file)
+    content, hash = get_file_content(bucket, most_recent_file)
     # print(f"The content of the most recently uploaded file is: {content}")
+    print(f"The SHA256 hash of the content is: {hash}")
 
     location = parse_email_from_s3(content)
     print(f"The attachments are saved in: {location}")
 
-    upload_attachments_to_s3(bucket, write_prefix, location)
+    upload_attachments_to_s3(bucket, write_prefix, location, hash)
     print(f"The attachments are uploaded to S3.")
 
 
