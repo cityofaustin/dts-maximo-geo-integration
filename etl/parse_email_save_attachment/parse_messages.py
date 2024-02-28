@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 
-import os
+# Standard library imports
 import glob
-import pytz
+import hashlib
+import os
+import tempfile
+from datetime import datetime
+from operator import itemgetter
+
+# Related third party imports
 import boto3
 import email
-import hashlib
-import tempfile
+import pytz
 from email import policy
-from operator import itemgetter
-from datetime import datetime
 
 
 def get_most_recent_file(bucket_name, prefix):
