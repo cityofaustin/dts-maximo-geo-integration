@@ -46,6 +46,21 @@ def parse_email_from_s3(email_content):
     email_content_bytes = email_content.encode("utf-8")
     parsed_email = email.message_from_bytes(email_content_bytes, policy=policy.default)
 
+    # List of headers to check
+    headers_to_check = {
+        'X-SES-Spam-Verdict': 'PASS',
+        'X-SES-Virus-Verdict': 'PASS',
+        'Received-SPF': 'pass',
+        'X-OriginatorOrg': 'austintexas.gov'
+    }
+
+    # Check the specified email headers
+    for header, expected_value in headers_to_check.items():
+        actual_value = parsed_email.get(header)
+        if actual_value is None or expected_value not in actual_value:
+            print(f"Email validation condition not met: {header} is {actual_value}. Expected: {expected_value}")
+            quit()
+
     # Create a temporary directory to store attachments
     temp_dir = tempfile.mkdtemp()
     if parsed_email.is_multipart():
@@ -60,8 +75,6 @@ def parse_email_from_s3(email_content):
                         f.write(part.get_payload(decode=True))
 
     return temp_dir
-
-
 
 
 def upload_attachments_to_s3(bucket, prefix, location):
