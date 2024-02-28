@@ -67,9 +67,8 @@ import glob
 def upload_attachments_to_s3(bucket, prefix, location):
     s3 = boto3.resource("s3")
 
-    # Create a new folder with the current date and time in Central Time
-    central = pytz.timezone("US/Central")
-    folder_name = datetime.now(central).strftime("%Y%m%d-%H%M%S")
+    # Create a new folder with the current date and time in UTC
+    folder_name = datetime.now(pytz.utc).strftime("%Y%m%d-%H%M%S_UTC")
     new_prefix = os.path.join(prefix, folder_name)
 
     # List all files in the location
