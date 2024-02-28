@@ -16,6 +16,20 @@ from email import policy
 
 
 def get_most_recent_file(bucket_name, prefix):
+    """
+    Get the most recent file in a specified S3 bucket and prefix.
+
+    This function lists all the objects in the specified S3 bucket and prefix,
+    sorts them by the last modified date in descending order, and returns the key
+    of the most recent file.
+
+    Parameters:
+    bucket_name (str): The name of the S3 bucket.
+    prefix (str): The prefix (folder path) to look for files.
+
+    Returns:
+    str: The key (path) of the most recent file. If no files are found, it returns a message.
+    """
     s3 = boto3.client("s3")
     paginator = s3.get_paginator('list_objects_v2')
 
@@ -34,7 +48,23 @@ def get_most_recent_file(bucket_name, prefix):
     most_recent_file = files[0]
     return most_recent_file["Key"]
 
+
+
 def get_file_content(bucket_name, file_key):
+    """
+    Get the content and SHA256 hash of a file in a specified S3 bucket and key.
+
+    This function retrieves the specified file from the S3 bucket, reads its content,
+    computes the SHA256 hash of the content, and decodes the content from bytes to a string.
+
+    Parameters:
+    bucket_name (str): The name of the S3 bucket.
+    file_key (str): The key (path) of the file in the S3 bucket.
+
+    Returns:
+    tuple: A tuple where the first element is the content of the file as a string,
+           and the second element is the SHA256 hash of the content.
+    """
     s3 = boto3.client("s3")
 
     # Get the object
@@ -52,6 +82,21 @@ def get_file_content(bucket_name, file_key):
     return content, sha256_hash
 
 def parse_email_from_s3(email_content):
+    """
+    Parse an email from S3 and check specific headers.
+
+    This function decodes the email content, checks specific headers against expected values
+    to help validate the sender's identity, and saves any attachments to a 
+    temporary directory. If any of the headers do not meet the expected values, it prints 
+    a message and quits.
+
+    Parameters:
+    email_content (str): The content of the email as a string.
+
+    Returns:
+    str: The path to the temporary directory where attachments are saved.
+    """
+
     # Decode the string into bytes
     email_content_bytes = email_content.encode("utf-8")
     parsed_email = email.message_from_bytes(email_content_bytes, policy=policy.default)
@@ -88,6 +133,23 @@ def parse_email_from_s3(email_content):
 
 
 def upload_attachments_to_s3(bucket, prefix, location, hash):
+    """
+    Upload attachments to a specified S3 bucket and prefix.
+
+    This function creates a new folder in the S3 bucket with the current date, time, and hash.
+    It then uploads all the files in the specified location to this new folder. If there are any
+    CSV or XLSX files in the location, it takes the alphabetically first one, deletes any existing
+    "most recent data" files in the S3 bucket, and uploads this file as the new "most recent data" file.
+
+    Parameters:
+    bucket (str): The name of the S3 bucket.
+    prefix (str): The prefix (folder path) in the S3 bucket where to create the new folder.
+    location (str): The local directory where the files to upload are located.
+    hash (str): The hash to include in the name of the new folder.
+
+    Returns:
+    None
+    """
     s3 = boto3.resource("s3")
 
     # Create a new folder with the current date and time in UTC
@@ -129,6 +191,22 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
 
 
 def check_if_hash_has_been_seen(hash, bucket, prefix):
+    """
+    Check if a hash has been seen before in a specified S3 bucket and prefix.
+
+    This function lists all the objects in the specified S3 bucket and prefix,
+    and checks if the first 8 characters of the hash are in the name of any of the objects.
+    If they are, it prints a message and returns True. If not, it returns False. The result 
+    of this function are used to pick if the program exists early or continues.
+
+    Parameters:
+    hash (str): The hash to check.
+    bucket (str): The name of the S3 bucket.
+    prefix (str): The prefix (folder path) in the S3 bucket where to look for the hash.
+
+    Returns:
+    bool: True if the hash has been seen before, False otherwise.
+    """
     s3 = boto3.client("s3")
     paginator = s3.get_paginator('list_objects_v2')
     short_hash = hash[:8]  # Only use the first 8 characters of the hash
