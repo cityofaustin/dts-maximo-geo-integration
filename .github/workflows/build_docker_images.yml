@@ -5,15 +5,13 @@ on:
   # and any updates to the etl scripts
   push:
     branches:
-      - master
-      - production
+      - main
     paths:
       - ".github/workflows/build_docker_images.yml"
       - "etl/**"
   pull_request:
     branches:
-      - master
-      - production
+      - main
     paths:
       - ".github/workflows/build_docker_images.yml"
       - "etl/**"
