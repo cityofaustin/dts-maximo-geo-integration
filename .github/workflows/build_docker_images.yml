@@ -53,5 +53,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           context: etl/parse_email_save_attachment
           push: true
-          tags: atddocker/maximo-geo-emergency-mgmt:${{ github.ref == 'refs/heads/master' && 'production' || 'latest' }}
+          tags: atddocker/maximo-geo-emergency-mgmt:${{ github.ref == 'refs/heads/master' && 'production' || 'production' }}
 
