@@ -2,21 +2,21 @@ name: "Build Docker images and push to DockerHub"
 
 on:
   # Triggers the workflow on push or pull request events but only for the master and production branches
-  # and any updates to the atd-etl scripts
+  # and any updates to the etl scripts
   push:
-    # branches:
-    #   - master
-    #   - production
+    branches:
+      - master
+      - production
     paths:
       - ".github/workflows/build_docker_images.yml"
       - "etl/**"
-  # pull_request:
-  #   branches:
-  #     - master
-  #     - production
-  #   paths:
-  #     - ".github/workflows/build_docker_images.yml"
-  #     - "etl/**"
+  pull_request:
+    branches:
+      - master
+      - production
+    paths:
+      - ".github/workflows/build_docker_images.yml"
+      - "etl/**"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -53,5 +53,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           context: etl/parse_email_save_attachment
           push: true
-          tags: atddocker/maximo-geo-emergency-mgmt:${{ github.ref == 'refs/heads/master' && 'production' || 'production' }}
-
+          tags: atddocker/maximo-geo-emergency-mgmt:${{ github.ref == 'refs/heads/master' && 'production' || 'latest' }}
