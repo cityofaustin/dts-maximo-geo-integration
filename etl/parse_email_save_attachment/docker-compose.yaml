@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  parse-email:
+    build: .
+    container_name: parse-email-container
+    volumes:
+      - .:/application
+    env_file:
+      - env
