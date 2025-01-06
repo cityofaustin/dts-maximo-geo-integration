@@ -108,7 +108,7 @@ def parse_email_from_s3(email_content):
         "X-SES-Spam-Verdict": "PASS",
         "X-SES-Virus-Verdict": "PASS",
         "Received-SPF": "pass",
-        "X-OriginatorOrg": "austintexas.gov",
+        # "X-OriginatorOrg": "austintexas.gov",
     }
 
     # Check the specified email headers
