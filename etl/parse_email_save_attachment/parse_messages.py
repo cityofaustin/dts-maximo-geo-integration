@@ -119,7 +119,6 @@ def parse_email_from_s3(email_content):
                 f"Email validation condition not met: {header} is {actual_value}. Expected: {expected_value}"
             )
             quit()
-
     # Create a temporary directory to store attachments
     temp_dir = tempfile.mkdtemp()
     if parsed_email.is_multipart():
