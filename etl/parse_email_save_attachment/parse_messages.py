@@ -142,7 +142,7 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
 
     This function creates a new folder in the S3 bucket with the current date, time, and hash.
     It then uploads all the files in the specified location to this new folder. If there are any
-    CSV or XLSX files in the location, it takes the alphabetically first one, deletes any existing
+    XLSX files in the location, it takes the alphabetically first one, deletes any existing
     "most recent data" files in the S3 bucket, and uploads this file as the new "most recent data" file.
 
     Parameters:
@@ -160,18 +160,16 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
     folder_name = datetime.now(pytz.utc).strftime("%Y%m%d-%H%M%S_UTC") + "-" + hash[:8]
     new_prefix = os.path.join(prefix, folder_name)
 
-    # List all files in the location
-    csv_files = glob.glob(os.path.join(location, "*.csv"))
+    # List all XLSX files in the location
     xlsx_files = glob.glob(os.path.join(location, "*.xlsx"))
-    data_files = sorted(csv_files + xlsx_files)
+    data_files = sorted(xlsx_files)
 
     if data_files:
-        # Take the alphabetically first CSV or XLSX file
+        # Take the alphabetically first XLSX file
         data_file = data_files[0]
-        file_extension = os.path.splitext(data_file)[1]
 
         # Create a new key for the data file
-        data_key = os.path.join("attachments", f"most_recent_data{file_extension}")
+        data_key = os.path.join("attachments", "most_recent_data.xlsx")
 
         # Delete all existing "most recent data" files
         for obj in s3.Bucket(bucket).objects.filter(
