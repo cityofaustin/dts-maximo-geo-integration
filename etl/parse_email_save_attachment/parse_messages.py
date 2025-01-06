@@ -64,7 +64,7 @@ def get_file_content(bucket_name, file_key):
 
     Returns:
     tuple: A tuple where the first element is the content of the file as a string,
-           and the second element is the SHA256 hash of the content.
+        and the second element is the SHA256 hash of the content.
     """
     s3 = boto3.client("s3")
 
