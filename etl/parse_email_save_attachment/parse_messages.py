@@ -31,7 +31,7 @@ def get_most_recent_file(bucket_name, prefix):
     str: The key (path) of the most recent file. If no files are found, it returns a message.
     """
     s3 = boto3.client("s3")
-    paginator = s3.get_paginator('list_objects_v2')
+    paginator = s3.get_paginator("list_objects_v2")
 
     files = []
     for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
@@ -39,7 +39,9 @@ def get_most_recent_file(bucket_name, prefix):
             files.extend(page["Contents"])
 
     if not files:
-        raise FileNotFoundError("No files found in the bucket with the specified prefix.")
+        raise FileNotFoundError(
+            "No files found in the bucket with the specified prefix."
+        )
 
     # Sort the files by last modified date
     files = sorted(files, key=itemgetter("LastModified"), reverse=True)
@@ -47,7 +49,6 @@ def get_most_recent_file(bucket_name, prefix):
     # Get the most recent file
     most_recent_file = files[0]
     return most_recent_file["Key"]
-
 
 
 def get_file_content(bucket_name, file_key):
@@ -63,7 +64,7 @@ def get_file_content(bucket_name, file_key):
 
     Returns:
     tuple: A tuple where the first element is the content of the file as a string,
-           and the second element is the SHA256 hash of the content.
+        and the second element is the SHA256 hash of the content.
     """
     s3 = boto3.client("s3")
 
@@ -81,13 +82,14 @@ def get_file_content(bucket_name, file_key):
 
     return content, sha256_hash
 
+
 def parse_email_from_s3(email_content):
     """
     Parse an email from S3 and check specific headers.
 
     This function decodes the email content, checks specific headers against expected values
-    to help validate the sender's identity, and saves any attachments to a 
-    temporary directory. If any of the headers do not meet the expected values, it prints 
+    to help validate the sender's identity, and saves any attachments to a
+    temporary directory. If any of the headers do not meet the expected values, it prints
     a message and quits.
 
     Parameters:
@@ -103,19 +105,19 @@ def parse_email_from_s3(email_content):
 
     # List of headers to check
     headers_to_check = {
-        'X-SES-Spam-Verdict': 'PASS',
-        'X-SES-Virus-Verdict': 'PASS',
-        'Received-SPF': 'pass',
-        'X-OriginatorOrg': 'austintexas.gov'
+        "X-SES-Spam-Verdict": "PASS",
+        "X-SES-Virus-Verdict": "PASS",
+        "Received-SPF": "pass",
     }
 
     # Check the specified email headers
     for header, expected_value in headers_to_check.items():
         actual_value = parsed_email.get(header)
         if actual_value is None or expected_value not in actual_value:
-            print(f"Email validation condition not met: {header} is {actual_value}. Expected: {expected_value}")
+            print(
+                f"Email validation condition not met: {header} is {actual_value}. Expected: {expected_value}"
+            )
             quit()
-
     # Create a temporary directory to store attachments
     temp_dir = tempfile.mkdtemp()
     if parsed_email.is_multipart():
@@ -138,7 +140,7 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
 
     This function creates a new folder in the S3 bucket with the current date, time, and hash.
     It then uploads all the files in the specified location to this new folder. If there are any
-    CSV or XLSX files in the location, it takes the alphabetically first one, deletes any existing
+    XLS files in the location, it takes the alphabetically first one, deletes any existing
     "most recent data" files in the S3 bucket, and uploads this file as the new "most recent data" file.
 
     Parameters:
@@ -156,18 +158,16 @@ def upload_attachments_to_s3(bucket, prefix, location, hash):
     folder_name = datetime.now(pytz.utc).strftime("%Y%m%d-%H%M%S_UTC") + "-" + hash[:8]
     new_prefix = os.path.join(prefix, folder_name)
 
-    # List all files in the location
-    csv_files = glob.glob(os.path.join(location, "*.csv"))
-    xlsx_files = glob.glob(os.path.join(location, "*.xlsx"))
-    data_files = sorted(csv_files + xlsx_files)
+    # List all XLS files in the location
+    xls_files = glob.glob(os.path.join(location, "*.xls"))
+    data_files = sorted(xls_files)
 
     if data_files:
-        # Take the alphabetically first CSV or XLSX file
+        # Take the alphabetically first XLS file
         data_file = data_files[0]
-        file_extension = os.path.splitext(data_file)[1]
 
         # Create a new key for the data file
-        data_key = os.path.join("attachments", f"most_recent_data{file_extension}")
+        data_key = os.path.join("attachments", "most_recent_data.xls")
 
         # Delete all existing "most recent data" files
         for obj in s3.Bucket(bucket).objects.filter(
@@ -196,7 +196,7 @@ def check_if_hash_has_been_seen(hash, bucket, prefix):
 
     This function lists all the objects in the specified S3 bucket and prefix,
     and checks if the first 8 characters of the hash are in the name of any of the objects.
-    If they are, it prints a message and returns True. If not, it returns False. The result 
+    If they are, it prints a message and returns True. If not, it returns False. The result
     of this function are used to pick if the program exists early or continues.
 
     Parameters:
@@ -208,18 +208,21 @@ def check_if_hash_has_been_seen(hash, bucket, prefix):
     bool: True if the hash has been seen before, False otherwise.
     """
     s3 = boto3.client("s3")
-    paginator = s3.get_paginator('list_objects_v2')
+    paginator = s3.get_paginator("list_objects_v2")
     short_hash = hash[:8]  # Only use the first 8 characters of the hash
 
     for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
         if "Contents" in page:
             for obj in page["Contents"]:
                 if short_hash in obj["Key"]:
-                    print(f"Hash {short_hash} has been seen before in file {obj['Key']}")
+                    print(
+                        f"Hash {short_hash} has been seen before in file {obj['Key']}"
+                    )
                     return True
 
     print(f"Hash {short_hash} has not been seen before.")
     return False
+
 
 def main():
     bucket = "emergency-mgmt-recd-data"
